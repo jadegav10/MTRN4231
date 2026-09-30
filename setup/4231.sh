@@ -26,18 +26,25 @@ if [ ! -f .env ]; then
 fi
 
 running() { [ "$(docker inspect -f '{{.State.Running}}' mtrn4231 2>/dev/null)" = "true" ]; }
-ensure_up() {
-    if ! running; then
-        [ "$SERVICE" = linux ] && command -v xhost >/dev/null && xhost +local: >/dev/null
-        docker compose up -d "$SERVICE"
+compose_up() {
+    # A container called mtrn4231 started from a different folder blocks ours.
+    other="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' mtrn4231 2>/dev/null || true)"
+    if [ -n "$other" ] && [ "$other" != "$PWD" ]; then
+        echo "[4231] A container named 'mtrn4231' already exists, started from: $other"
+        echo "[4231] Remove it (your code is not affected) and try again:  docker rm -f mtrn4231"
+        exit 1
     fi
+    # Build locally when the image is missing; never try to pull it from Docker Hub.
+    docker image inspect mtrn4231:humble >/dev/null 2>&1 || docker compose build "$SERVICE"
+    [ "$SERVICE" = linux ] && command -v xhost >/dev/null && xhost +local: >/dev/null
+    docker compose up -d --pull never "$SERVICE"   # recreates the container if .env / compose changed
 }
+ensure_up() { running || compose_up; }
 in_container() { ensure_up; docker exec -it mtrn4231 bash -ic "$*"; }
 
 cmd="${1:-shell}"; shift || true
 case "$cmd" in
-    up)      [ "$SERVICE" = linux ] && command -v xhost >/dev/null && xhost +local: >/dev/null
-             docker compose up -d "$SERVICE"   # recreates the container if .env / compose changed
+    up)      compose_up
              [ "$SERVICE" != linux ] && echo "[4231] GUI desktop: http://localhost:6080/vnc.html?autoconnect=1&resize=remote" ;;
     shell)   ensure_up; docker exec -it mtrn4231 bash ;;
     build)   in_container build_4231.sh "$@" ;;
@@ -47,6 +54,6 @@ case "$cmd" in
                || xdg-open "http://localhost:6080/vnc.html?autoconnect=1&resize=remote" ;;
     stop)    docker compose stop ;;
     down)    docker compose down ;;
-    rebuild) docker compose build "$SERVICE" && docker compose up -d --force-recreate "$SERVICE" ;;
+    rebuild) docker compose build "$SERVICE" && docker compose up -d --pull never --force-recreate "$SERVICE" ;;
     *)       sed -n '2,12p' "$0"; exit 1 ;;
 esac

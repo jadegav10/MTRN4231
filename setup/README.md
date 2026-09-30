@@ -178,6 +178,7 @@ Most connection problems are one of two things: the pendant program started befo
 | Other benches' topics appear in `ros2 topic list` | Same `ROS_DOMAIN_ID` on a shared network | Give each bench its own `ROS_DOMAIN_ID` in `setup/.env`, then run `./4231.sh up` |
 | RealSense, webcam or Arduino not found (Mac) | Docker Desktop can't pass USB devices through | Use a Linux lab PC, or record a rosbag there and replay it on the Mac |
 | Linux: `cannot open display` | Host X server refuses the container | Run `xhost +local:` (`./4231.sh` does this for you) |
+| `A container named 'mtrn4231' already exists, started from: …` | An older container from another folder (e.g. a second clone) | Run `docker rm -f mtrn4231`, then `./4231.sh up`. Your code isn't affected |
 | `./4231.sh: Permission denied` | Clone lost the executable bit | Run `chmod +x setup/4231.sh setup/scripts/*.sh` |
 
 ## Reference
