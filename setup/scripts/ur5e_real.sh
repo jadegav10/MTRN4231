@@ -1,5 +1,5 @@
 #!/bin/bash
-# Container version of 4231_scripts/setupRealur5e.sh.
+# Container version of scripts/setupRealur5e.sh.
 # Starts the UR driver against a physical UR5e plus MoveIt + RViz in tmux.
 #
 # Usage: ur5e_real.sh [ROBOT_IP]          (default 192.168.0.100)

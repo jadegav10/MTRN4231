@@ -1,12 +1,14 @@
-# MTRN4231 Docker environment
+# MTRN4231 Docker environment: technical details
+
+Students should start with the setup guide in [`README.md`](README.md). This page is for maintainers.
 
 This folder builds a ROS 2 Humble (Ubuntu 22.04) container for all of the supplied code.
-The repository root (the folder above `docker/`) is **bind-mounted** at `~/4231` inside the container.
+The repository root (the folder above `setup/`) is **bind-mounted** at `~/4231` inside the container.
 Anything you edit or build there is the same folder on your computer, so it survives container rebuilds.
-The paths in the lab sheets (`~/4231/lab1_workspace/...`) work unchanged.
+Lab workspaces are at `~/4231/labs/lab1_workspace/...`.
 
 The image follows the **MTRN4231 Install Guide**: Ubuntu 22.04 + ROS 2 Humble **desktop**, the guide's useful installs, and the UR driver from apt (`ros-humble-ur`, which brings in MoveIt 2 as apt binaries).
-**MoveIt is not built from source**, so the supplied `ws_moveit2` and `ros_ur_driver` folders aren't used.
+**MoveIt is not built from source**, so `source/ws_moveit2` and `source/ros_ur_driver` aren't used.
 The image contains no course code:
 
 | Needed for | What is installed (all apt, except pip where noted) |
@@ -22,7 +24,8 @@ The image contains no course code:
 The guide's Arduino IDE and VS Code belong on the host, not in the container.
 
 ```
-docker/
+setup/
+├── README.md        ← the student setup guide (+ images/)
 ├── 4231.sh          ← helper: up / shell / build / fake / real / desktop / stop
 ├── compose.yaml     ← services: `linux` (lab PCs), `mac-host` (Docker Desktop, default), `mac` (fallback)
 ├── Dockerfile
@@ -30,9 +33,9 @@ docker/
 ├── entrypoint.sh    ← starts the noVNC desktop on macOS
 ├── ros_env.sh       ← sourced in every shell (ROS + course workspaces)
 └── scripts/         ← on PATH in the container
-    ├── build_4231.sh    builds 4231_utils and 4231_demo_packages
-    ├── ur5e_fake.sh     container version of 4231_scripts/setupFakeur5e.sh
-    └── ur5e_real.sh     container version of 4231_scripts/setupRealur5e.sh
+    ├── build_4231.sh    builds packages/4231_utils and packages/4231_demo_packages
+    ├── ur5e_fake.sh     container version of scripts/setupFakeur5e.sh
+    └── ur5e_real.sh     container version of scripts/setupRealur5e.sh
 ```
 
 ---
@@ -40,9 +43,9 @@ docker/
 ## Quick start
 
 ```bash
-cd docker
+cd setup
 ./4231.sh up        # first run builds the image (~15–25 min) and creates .env
-./4231.sh build     # colcon-builds 4231_utils + 4231_demo_packages (a minute or two)
+./4231.sh build     # colcon-builds packages/4231_utils + packages/4231_demo_packages (about a minute)
 ./4231.sh fake      # fake UR5e + MoveIt + RViz: the "does it all work" test
 ./4231.sh shell     # open more terminals, as many as you like
 ```
@@ -102,7 +105,7 @@ It needs Docker Desktop's **host networking**: *Settings → Resources → Netwo
 Docker's internal subnet (192.168.65.0/24) is separate from the robot network, so leave it as it is.
 
 1. Connect a USB/Thunderbolt Ethernet adapter to the robot. In *System Settings → Network*, set it to *Manually*: IP `192.168.0.77` (any free address), subnet `255.255.255.0`, no router.
-2. In `docker/.env`, set `HOST_IP=192.168.0.77`.
+2. In `setup/.env`, set `HOST_IP=192.168.0.77`.
    The container only sees Docker's VM addresses (192.168.65.x), so the driver has to be told the Mac's real IP (`reverse_ip`).
 3. Enter the same IP as the URCap **Host IP** on the pendant.
 4. Run `./4231.sh real`, **then** press Play on the pendant. If the program was already playing, press Stop and then Play. The URCap doesn't retry, so a program started before the driver fails with *"connection … timed out"*.
@@ -117,7 +120,7 @@ In testing, the robot's connections back to the Mac timed out and the driver's R
 USB devices (RealSense, webcam, Arduino) **cannot** be passed into Docker Desktop on macOS.
 Do camera or serial labs on a Linux PC, or record a rosbag there and replay it on the Mac.
 
-### Manual launch (same commands as `4231_scripts/`)
+### Manual launch (same commands as `scripts/`)
 
 ```bash
 # terminal 1
@@ -149,7 +152,7 @@ ros2 run util_arduino_serial util_arduino_serial                                
 
 ## Lab 4 (YOLO)
 
-Clone `yolov8_ros` into `lab4_workspace/src` and `pip install -r requirements.txt`, as the sheet says.
+Clone `yolov8_ros` into `labs/lab4_workspace/src` and `pip install -r requirements.txt`, as the sheet says.
 Use `pip install --user`: `~/.local` is kept in a Docker volume, but any other pip install is lost when the container is recreated.
 If pip upgrades `numpy` to 2.x, `cv_bridge` breaks; fix it with `pip install --user "numpy<2"`.
 
@@ -159,7 +162,7 @@ If pip upgrades `numpy` to 2.x, `cv_bridge` breaks; fix it with `pip install --u
 
 ## Notes and troubleshooting
 
-* **Apt vs supplied UR config:** the supplied `ros_ur_driver` has course edits that the apt `ur_moveit_config` doesn't include.
+* **Apt vs supplied UR config:** the supplied `source/ros_ur_driver` has course edits that the apt `ur_moveit_config` doesn't include.
   For example, its SRDF adds a `test_configuration` goal state, which the Lab 3 sheet asks students to select in RViz.
   With apt, pick `home` or `up`, or drag the arm to a pose instead.
 * **`ros_ur_driver` dependency:** `lab3_moveit` and `demo_moveit_ur` list `<depend>ros_ur_driver</depend>`, but that's a folder name, not a package.
@@ -171,4 +174,4 @@ If pip upgrades `numpy` to 2.x, `cv_bridge` breaks; fix it with `pip install --u
 * **Start again from a clean build:** delete the `build/ install/ log/` folders in the affected workspace, then run `./4231.sh build`.
 * **Calibration warning:** the driver's "calibration parameters … don't match" error means the robot's factory calibration hasn't been extracted. Motion still works, but poses can be a few mm off.
   To fix it, run `ros2 launch ur_calibration calibration_correction.launch.py robot_ip:=192.168.0.100 target_filename:=$HOME/4231/ur5e_calibration.yaml`, then pass `kinematics_params_file:=...` to the driver.
-* **Driver version:** the apt driver (`ros-humble-ur` 2.14) is newer than the supplied `ros_ur_driver` (2.2.8). It worked with PolyScope 5.10 and the lab's External Control URCap in testing.
+* **Driver version:** the apt driver (`ros-humble-ur` 2.14) is newer than the supplied `source/ros_ur_driver` (2.2.8). It worked with PolyScope 5.10 and the lab's External Control URCap in testing.

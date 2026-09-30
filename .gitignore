@@ -3,8 +3,8 @@ build/
 install/
 log/
 
-# personal Docker settings (IPs, VNC password) — copy docker/.env.example
-docker/.env
+# personal Docker settings (IPs, VNC password) — copied from setup/.env.example
+setup/.env
 
 # editors / OS
 .DS_Store

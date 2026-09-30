@@ -1,7 +1,7 @@
 #!/bin/bash
-# Build the course's shared workspaces: 4231_utils and 4231_demo_packages.
-# MoveIt 2 and the UR driver come from apt (ros-humble-ur), so ws_moveit2 and
-# ros_ur_driver in the supplied code are NOT built.
+# Build the course's shared workspaces: packages/4231_utils and packages/4231_demo_packages.
+# MoveIt 2 and the UR driver come from apt (ros-humble-ur), so source/ws_moveit2 and
+# source/ros_ur_driver are NOT built.
 # Build output (build/ install/ log/) lands in each workspace inside the
 # bind-mounted supplied-code folder.
 #
@@ -9,7 +9,7 @@
 set -eo pipefail
 
 COURSE_DIR="${COURSE_DIR:-$HOME/4231}"
-WORKSPACES="${*:-4231_utils 4231_demo_packages}"
+WORKSPACES="${*:-packages/4231_utils packages/4231_demo_packages}"
 source /opt/ros/humble/setup.bash
 
 for ws in $WORKSPACES; do

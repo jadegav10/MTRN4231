@@ -1,5 +1,5 @@
 #!/bin/bash
-# Container version of 4231_scripts/setupFakeur5e.sh.
+# Container version of scripts/setupFakeur5e.sh.
 # Starts the UR driver (fake hardware) and MoveIt + RViz in a tmux session.
 #   Ctrl-b then n / p  switch windows      Ctrl-b then d  detach
 #   tmux kill-session -t ur5e              stop everything

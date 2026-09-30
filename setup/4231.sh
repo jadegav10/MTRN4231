@@ -3,7 +3,7 @@
 #
 #   ./4231.sh up        build (first time) and start the container
 #   ./4231.sh shell     open a shell in the container (run as many as you like)
-#   ./4231.sh build     colcon-build 4231_utils + 4231_demo_packages
+#   ./4231.sh build     colcon-build packages/4231_utils + packages/4231_demo_packages
 #   ./4231.sh fake      start the fake UR5e + MoveIt + RViz
 #   ./4231.sh real [IP] connect to the physical UR5e (default 192.168.0.100)
 #   ./4231.sh desktop   open the noVNC desktop in a browser (macOS)
