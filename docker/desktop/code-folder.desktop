@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=4231 Code
+Comment=The supplied code folder (bind-mounted from the host)
+Exec=thunar /home/student/4231
+Icon=folder
+Terminal=false

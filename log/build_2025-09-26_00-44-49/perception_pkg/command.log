@@ -1,6 +1,0 @@
-Invoking command in '/home/jade/ros2_ws/build/perception_pkg': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/jade/ros2_ws/src/perception_pkg -DCMAKE_INSTALL_PREFIX=/home/jade/ros2_ws/install/perception_pkg
-Invoked command in '/home/jade/ros2_ws/build/perception_pkg' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/jade/ros2_ws/src/perception_pkg -DCMAKE_INSTALL_PREFIX=/home/jade/ros2_ws/install/perception_pkg
-Invoking command in '/home/jade/ros2_ws/build/perception_pkg': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/jade/ros2_ws/build/perception_pkg -- -j8 -l8
-Invoked command in '/home/jade/ros2_ws/build/perception_pkg' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/jade/ros2_ws/build/perception_pkg -- -j8 -l8
-Invoking command in '/home/jade/ros2_ws/build/perception_pkg': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/jade/ros2_ws/build/perception_pkg
-Invoked command in '/home/jade/ros2_ws/build/perception_pkg' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/jade/ros2_ws/build/perception_pkg

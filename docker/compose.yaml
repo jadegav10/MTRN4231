@@ -1,0 +1,87 @@
+# MTRN4231 ROS 2 Humble environment.
+#
+#   Linux lab PC (recommended for the real UR5e):  docker compose up -d linux
+#   macOS (Docker Desktop):                         docker compose up -d mac-host
+#     (needs host networking enabled; `mac` is the port-forwarding fallback)
+#
+# All services bind-mount this repository (CODE_DIR, default: the repo root) at ~/4231.
+# Settings come from .env (copy .env.example). See README.md.
+
+x-common: &common
+  image: mtrn4231:humble
+  build:
+    context: .
+    args:
+      USER_UID: ${HOST_UID:-1000}
+      USER_GID: ${HOST_GID:-1000}
+  volumes:
+    - ${CODE_DIR:-..}:/home/student/4231
+    - pip-user:/home/student/.local     # `pip install --user` survives rebuilds
+    - ./scripts:/opt/4231/scripts:ro     # helper scripts (edit without rebuilding)
+  environment: &common-env
+    ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+    ROBOT_IP: ${ROBOT_IP:-192.168.0.100}
+  stdin_open: true
+  tty: true
+  init: true
+  shm_size: 2gb
+  restart: unless-stopped
+
+services:
+  # --- Linux host: host networking + host X server + USB devices -------------
+  linux:
+    <<: *common
+    container_name: mtrn4231
+    hostname: mtrn4231
+    network_mode: host      # UR driver, DDS and the robot's callbacks just work
+    ipc: host
+    privileged: true        # RealSense / webcam / Arduino (hot-plug safe)
+    volumes:
+      - ${CODE_DIR:-..}:/home/student/4231
+      - pip-user:/home/student/.local
+      - ./scripts:/opt/4231/scripts:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - /run/udev:/run/udev:ro
+    environment:
+      <<: *common-env
+      DISPLAY: ${DISPLAY:-:0}
+      UR_REVERSE_IP: ${HOST_IP:-}
+
+  # --- macOS (Docker Desktop): bridge network, GUI in the browser via noVNC --
+  mac:
+    <<: *common
+    container_name: mtrn4231
+    hostname: mtrn4231
+    ports:
+      - "127.0.0.1:6080:6080"   # noVNC desktop: http://localhost:6080
+      - "127.0.0.1:5901:5901"   # native VNC client: vnc://localhost:5901
+      - "50001-50004:50001-50004" # UR driver reverse interface (robot -> this Mac)
+    environment:
+      <<: *common-env
+      ENABLE_VNC: "1"
+      VNC_PASSWORD: ${VNC_PASSWORD:-}
+      DISPLAY: ":1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      # The robot must call back to the Mac's IP, not the container's.
+      UR_REVERSE_IP: ${HOST_IP:-}
+
+  # --- macOS with Docker Desktop host networking (Settings > Resources >
+  #     Network > Enable host networking). No port forwarding layer, so the
+  #     UR driver's long-lived streams and the robot's callbacks work.
+  mac-host:
+    <<: *common
+    container_name: mtrn4231
+    hostname: mtrn4231
+    network_mode: host
+    environment:
+      <<: *common-env
+      ENABLE_VNC: "1"
+      NOVNC_LISTEN: "127.0.0.1:6080"   # keep the desktop off the uni network
+      VNC_PASSWORD: ${VNC_PASSWORD:-}  # needed only for native VNC clients (vnc://localhost:5901)
+      DISPLAY: ":1"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      UR_REVERSE_IP: ${HOST_IP:-}      # the Mac's IP on the robot network
+
+volumes:
+  pip-user:

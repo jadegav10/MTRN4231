@@ -1,0 +1,14 @@
+# colcon build output (every workspace)
+build/
+install/
+log/
+
+# personal Docker settings (IPs, VNC password) — copy docker/.env.example
+docker/.env
+
+# editors / OS
+.DS_Store
+.vscode/
+*.swp
+__pycache__/
+*.pyc

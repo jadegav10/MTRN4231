@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Connect UR5e (real)
+Comment=UR driver + MoveIt + RViz for the physical robot
+Exec=xfce4-terminal --title=UR5e --command="bash -ic ur5e_real.sh"
+Icon=network-wired
+Terminal=false

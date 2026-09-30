@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=4231 Terminal
+Comment=Terminal in ~/4231 with ROS 2 sourced
+Exec=xfce4-terminal --working-directory=/home/student/4231
+Icon=utilities-terminal
+Terminal=false

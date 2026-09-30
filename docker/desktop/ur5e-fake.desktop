@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=UR5e (fake hardware)
+Comment=Simulated UR5e + MoveIt + RViz
+Exec=xfce4-terminal --title=UR5e-fake --command="bash -ic ur5e_fake.sh"
+Icon=applications-science
+Terminal=false
